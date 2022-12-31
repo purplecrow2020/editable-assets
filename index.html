@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+    <head>
+        <style>
+            #samples {
+                padding: 10px;
+                margin: 5px;
+
+            }
+
+            .input-page {
+                padding: 5px 10px;
+                border: 1px solid black;
+            }
+
+            .wrapper {
+                margin: 20px;
+            }
+        </style>
+                <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <span><p><h3>EDITABLE ASSETS DEMO</h3></p>&nbsp;<p>( only supporting images for now ) </p></span>
+            <div>
+                <p><h4>FEATURES</h4></p>
+                <ul>
+                    <li> drap - drop text blocks </li>
+                    <li> edit text blocks </li>
+                </ul>
+            </div>
+            <input class="input-page" size="40" id="image_url" type="text" name="image url" aria-label="Small" aria-describedby="inputGroup-sizing-sm" placeholder="enter image url">
+            <button type="button" class="btn" onclick="onImageUrlSubmit()">submit</button>
+        </div>
+        <div id="samples">
+            <p style="font-size:15px;font-weight:20px;"><b>TRY WITH SOME SAMPLE IMAGES</b></p>
+            <div id="sample-images">
+            </div>
+        </div>
+
+
+        <script>
+            function onImageUrlSubmit() {
+                const imageUrlInput = document.getElementById('image_url');
+                window.location.href = `./editor.html?image_url=${imageUrlInput.value}`;
+            }
+
+            window.onload = function () {
+                const images = [
+                    'http://d10lpgp6xz60nq.cloudfront.net/images/sample-resume-1.png',
+                    'http://d10lpgp6xz60nq.cloudfront.net/images/test-formal-letter.png',
+                    'http://d10lpgp6xz60nq.cloudfront.net/images/leave-application-sample-1.png',
+                    'http://d10lpgp6xz60nq.cloudfront.net/images/letter-sample-3.png',
+                    'http://d10lpgp6xz60nq.cloudfront.net/images/test-formal-letter.png',
+                    'http://d10lpgp6xz60nq.cloudfront.net/images/math_workbook_sample1.jpeg',
+                    'http://d10lpgp6xz60nq.cloudfront.net/images/letter-sample-2.png',
+                ];
+                
+                const sampleImagesDiv = document.getElementById("sample-images");
+                for (const image of images) {
+                    sampleImagesDiv.innerHTML += `<a href='./editor.html?image_url=${image}'><img src=${image} style="height:250px;border:1px solid black;margin-left:5px"></a>`
+                }
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+    <head>
+        <style>
+            #canvas {
+                border: 3px solid black;
+            }
+
+            .draggable:focus {
+                outline: none;
+                border:1px dashed black;
+            }
+
+            
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.1/axios.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+        <script>
+            
+            function getParams() {
+                const url = decodeURI(window.location.search);
+                const queryString = url.replace('?', '');
+                const params = {};
+                queryString.split('&').map((paramString) => {
+                    const [ key, value, ] = paramString.split('=');
+                    params[key] = value;
+                });
+                return params;
+            }
+
+
+            async function getTextBlockData() {
+                const params = getParams();
+                const url = "https://picasso.internal.doubtnut.com/api/editable-asset-data";
+                const payload = {
+                    image_url: params.image_url,
+                }
+                const headers = { 
+                    'Content-Type': 'application/json',
+                };
+                const data = await axios.post(url, payload, { headers: { ...headers, }});
+                return data;
+            }
+
+
+            function reorderIdentifiers() {
+                const editContentDivs = document.querySelectorAll('.draggable');
+                for (let i=0; i < editContentDivs.length; i++) {
+                    editContentDivs[i].setAttribute('identifier', i);
+                }
+            }
+
+            function updateHeightWidthOfCanvas(textBlocks) {
+                let maxX = 0;
+                let maxY = 0;
+                for (let i=0; i < textBlocks.length; i++) {
+                    const textBlock = textBlocks[i];
+                    const [ text, x, y, w, h, ] = textBlock;
+                    if (x + w > maxX) {
+                        maxX = x + w;
+                    }
+                    if (y + h > maxY) {
+                        maxY = y + h;
+                    }
+                }
+
+                const canvasElement = document.querySelector("#canvas");
+                canvasElement.style.height = maxY + "px";
+                canvasElement.style.width = maxX + "px";
+            }
+        </script>
+    </head>
+
+    <body>      
+        <div id="canvas" style="position:relative;cursor:move;">
+        </div>
+        <script>
+            window.onload = async function() {
+                const textBlockDataApiResponse = await getTextBlockData();
+                const textBlocks = textBlockDataApiResponse.data.data.text_blocks;
+                for (let i=0; i < textBlocks.length; i++) {
+                    const textBlock = textBlocks[i];
+                    const [ text, x, y, w, h, ] = textBlock;
+                    const canvasDiv = document.getElementById("canvas");
+                    canvasDiv.innerHTML += `<div class="draggable" draggable=true contenteditable=true class="ui-draggable ui-draggable-handle" style="padding:4px;position:absolute;top:${y}px;left:${x}px;width:${parseInt(w) + 40}px;height:${Math.floor(h) + 10}px; word-break: break-word;" identifier=${i}>${text}</div>`;
+                }
+                updateHeightWidthOfCanvas(textBlocks);
+                $( function() {
+                    $( ".draggable" ).draggable();
+                } );
+
+                const editContentDivs = document.querySelectorAll('.draggable');
+                for (const editContentDiv of editContentDivs) {
+                    // editContentDiv.addEventListener('dblclick', function() {
+                    //     console.log("double clicked");
+                    //     editContentDiv.setAttribute("contenteditable", "true");
+                    // });
+
+                    editContentDiv.addEventListener('keyup', function(e) {
+                        const topOffset = editContentDiv.style.top;
+                        const topOffsetInt = parseInt(topOffset.toString().slice(0, topOffset.length-1));
+                        const name = e.key;
+                        const code = e.code;
+                        if (name !== 'Backspace') {
+                            return;
+                        }
+
+                        const selectionElement = document.getSelection();
+                        const offset = selectionElement.anchorOffset;
+
+                        if (offset == 0) {
+                            const currentElementIdentifier = editContentDiv.getAttribute('identifier');
+                            const prevElementIdentifier = parseInt(currentElementIdentifier) - 1;
+                            if (prevElementIdentifier  == 0) {
+                                return;
+                            }
+
+                            const prevElement = document.querySelector(`[identifier='${prevElementIdentifier}']`);
+                            prevElement.innerHTML += editContentDiv.innerHTML;
+                            const prevElementWidth = parseInt(prevElement.style.width, 10);
+                            const currentElementWidth = parseInt(editContentDiv.style.width, 10);
+                            prevElement.style.width = prevElementWidth + currentElementWidth + 'px';
+                            editContentDiv.classList.remove('draggable');
+                            reorderIdentifiers();
+                            editContentDiv.remove();
+                        }
+                    });
+                }
+            }
+
+
+
+
+        </script>
+    </body>
+
+</html>
